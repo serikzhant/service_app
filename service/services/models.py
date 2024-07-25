@@ -60,8 +60,19 @@ class Subscription(models.Model):
     service = models.ForeignKey(Service, related_name='subscriptions', on_delete=models.PROTECT)
     plan = models.ForeignKey(Plan, related_name='subscriptions', on_delete=models.PROTECT)
     price = models.PositiveIntegerField(default=0)
-    comment = models.CharField(max_length=50, default='')
+    comment = models.CharField(max_length=50, default='', db_index=True)
 
+    # Составное индексирование
+
+    field_a = models.CharField(max_length=50, default='')
+    field_b = models.CharField(max_length=50, default='')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['field_a', 'field_b'])
+        ]
+
+    # Составное индексирование
 
     def __str__(self):
         return f'{self.client} - {self.service} Plan - {self.plan}'
@@ -70,8 +81,8 @@ class Subscription(models.Model):
     def save(self, *args, **kwargs):
         creating = not bool(self.id)
         result = super().save(*args, **kwargs)
-        if creating:
-            set_price.delay(self.id)
+        # if creating:
+        #     set_price.delay(self.id)
         return result
 
 
